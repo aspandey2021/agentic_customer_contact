@@ -1,0 +1,21 @@
+Extract structured information from the following customer email.
+
+Email:
+{{$email_text}}
+
+Return the result as JSON with fields:
+{
+  "meter_reading": number or null,
+  "meter_number": string or null,
+  "reading_date": string or null,
+  "personal_data": {
+     "full_name": string or null,
+     "address": string or null,
+     "contract_number": string or null,
+     "birthday": string or null,
+     "installment_amount": string or null,
+     "customer_number": string or null,
+  },
+  "tariff_questions": string or null,
+  "feedback": string or null
+}

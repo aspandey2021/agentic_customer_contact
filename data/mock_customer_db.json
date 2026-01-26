@@ -1,0 +1,10 @@
+{
+  "julia_meyer": {
+    "full_name": "Julia Meyer",
+    "address": "Some Street 5, Hamburg",
+    "contract_number": "ABC-123",
+    "birthday": "1990-05-17",
+    "installment_amount": "50",
+    "customer_number": "CUST-001"
+  }
+}

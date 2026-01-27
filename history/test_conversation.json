@@ -1,0 +1,13 @@
+[
+  {
+    "role": "customer",
+    "content": [
+      "\nHello LichtBlick Team,\nMy new meter reading is 54321 for meter number 876543.\nBest regards,\nAlice\n\nHi,\nI would like to know more about your green electricity tariffs.\nThanks,\nBob\n",
+      "\nHi,\nHere is my customer number: 123456 and my postal code 22299.\n"
+    ]
+  },
+  {
+    "role": "assistant",
+    "content": "Final Reply"
+  }
+]

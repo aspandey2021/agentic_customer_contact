@@ -1,29 +1,39 @@
+"""Implement the authentication service class."""
 import json
 import logging
 import os
+
+from semantic_kernel import Kernel
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+
+from .. import MOCK_CUSTOMER_DB
 from ..core.state import SharedState
 from .email_reader import EmailReader
-from ..plugins.data_extraction_plugin import DataExtractionPlugin
-from ..core.sk_kernel import build_kernel
-from .llm_service import LLMService
-from .. import MOCK_CUSTOMER_DB
 
 log = logging.getLogger(__name__)
 
-class AuthenticationService:
 
-    def __init__(self, conversation_id: str):
+class AuthenticationService:
+    """Class to carry out authentication service, for intents requiring authentication."""
+    def __init__(self, conversation_id: str, kernel: Kernel):
+        """Initialise.
+
+        :param conversation_id: str identifier for the current conversation thread.
+        :param kernel: Kernel object containing relevant Azure Services and plugins.
+        """
         self.conversation_id = conversation_id
+        self.kernel = kernel
         self.customer_db = _load_mock_db()
         self.reader = EmailReader(conversation_id)
 
     def _find_customer_match(self, auth_data: dict) -> bool:
-        """
-        Checks if at least 3 fields match ANY customer.
+        """Check if at least 3 fields match ANY customer.
+
+        :param auth_data: extracted personal data of customer to be used for authorization.
+        :return: boolean, if authorized or not.
         """
         for _, customer in self.customer_db.items():
             matches = 0
-
             for key, value in auth_data.items():
                 if (
                     value
@@ -31,19 +41,21 @@ class AuthenticationService:
                     and str(customer[key]).lower() == str(value).lower()
                 ):
                     matches += 1
-
             if matches >= 3:
                 return True
-
         return False
 
-    async def run_authentication_loop(self, state: SharedState):
-        """
-        Loop through sequential emails until authentication passes.
+    async def run_authentication_loop(
+        self, state: SharedState, email_id: int
+    ) -> SharedState:
+        """Loop through sequential emails until authentication passes.
+
+        :param state: current shared state, which has parameters like conversation_id, email_text etc.
+        :param email_id: int index of the email to be read for authentication.
+        :return: updated current shared state.
         """
         log.info("...Inside Authentication Loop...")
-
-        email_index = 2  # initial request is 1, so next reply is email_2.txt
+        email_index = email_id  # if initial request is 1, so next reply is email_2.txt
 
         while True:
             if self._find_customer_match(state.auth_data):
@@ -52,7 +64,6 @@ class AuthenticationService:
                 return state
 
             log.warning("...Authentication FAILED or incomplete — requesting more info...")
-
             # Load next mock email reply
             try:
                 next_email = self.reader.load_email(email_index)
@@ -66,12 +77,12 @@ class AuthenticationService:
             # Add that email to the history
             state.add_history(role="customer", content=next_email)
 
-            # Extract personal data (reuse extraction agent!)
-            kernel = build_kernel()
-            extractor = DataExtractionPlugin(LLMService(kernel))
-
-            extracted = await extractor.extract_data(next_email)
-
+            extracted_raw = await self.kernel.invoke(
+                plugin_name="DataExtractionPlugin",
+                function_name="extract_data",
+                arguments=KernelArguments(email_text=next_email),
+            )
+            extracted = extracted_raw.value
             personal = extracted.get("personal_data", {})
 
             # Merge new personal data into state
@@ -79,10 +90,11 @@ class AuthenticationService:
                 if v:
                     state.auth_data[k] = v
 
-            print("Current auth_data:", state.auth_data)
+            log.info("Current auth_data:", state.auth_data)
 
 
 def _load_mock_db():
+    """Load mock customer DB for authentication."""
     if not os.path.exists(MOCK_CUSTOMER_DB):
         raise FileNotFoundError("mock_customer_db.json missing.")
 

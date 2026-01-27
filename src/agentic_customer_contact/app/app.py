@@ -1,15 +1,21 @@
+"""Entrypoint to the agentic customer contact application."""
+
 import asyncio
+import logging
 
-from ..core.orchestrator import Orchestrator
+from agentic_customer_contact.core.orchestrator import Orchestrator
 
-def main():
-    conversation_id = "example_conversation"
+log = logging.getLogger(__name__)
 
-    orch = Orchestrator(conversation_id)
+
+def main() -> None:
+    """Run the agentic ai entrypoint."""
+    conversation_id = "first"
+
+    orch = Orchestrator(conversation_id, email_id=1)
     final_email = asyncio.run(orch.run())
 
-    print("\nFinal Email Reply:\n")
-    print(final_email)
+    log.info(f"Final Email Reply :\n{final_email}")
 
 
 if __name__ == "__main__":

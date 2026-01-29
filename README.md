@@ -94,3 +94,5 @@ python -m pytest tests/test_orchestrator.py
 
 
 All tests run without Azure access, because SK plugin calls get monkeypatched.
+
+Have a good day!

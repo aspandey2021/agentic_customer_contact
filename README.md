@@ -1,6 +1,6 @@
 **Agentic Customer Contact Copilot (Semantic Kernel + Azure OpenAI)**
 
-This project implements the full Agentic Customer Contact Copilot case study from LichtBlick SE using:
+This project implements the full Agentic Customer Contact Copilot using:
 
 Python 3.11.14
 

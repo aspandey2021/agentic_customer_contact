@@ -9,7 +9,7 @@ from agentic_customer_contact.core.state import SharedState
 pytestmark = pytest.mark.asyncio
 
 EMAIL_METER_SUBMISSION = """
-Hello LichtBlick Team,
+Hello XYZ AG Team,
 My new meter reading is 54321 for meter number 876543.
 Best regards,
 Alice

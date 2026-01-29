@@ -2,9 +2,9 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from src.agentic_customer_contact.config.config import Intent
-from src.agentic_customer_contact.core.orchestrator import Orchestrator
-from src.agentic_customer_contact.core.state import SharedState
+from agentic_customer_contact.config.config import Intent
+from agentic_customer_contact.core.orchestrator import Orchestrator
+from agentic_customer_contact.core.state import SharedState
 
 pytestmark = pytest.mark.asyncio
 

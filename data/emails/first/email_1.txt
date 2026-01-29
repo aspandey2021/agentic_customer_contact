@@ -1,4 +1,4 @@
-Hello LichtBlick Team,
+Hello Team,
 I’d like to submit my latest electricity meter reading and ask about your dynamic tariff. My meter number is
 LB-9876543. The reading yesterday (25.09.2025) was 2438 kWh.
 How does your dynamic tariff work and would it make sense for a 2person household with an induction

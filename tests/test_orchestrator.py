@@ -1,9 +1,12 @@
+import os
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 from agentic_customer_contact.config.config import Intent
 from agentic_customer_contact.core.orchestrator import Orchestrator
+from agentic_customer_contact.core.sk_kernel import build_kernel
 from agentic_customer_contact.core.state import SharedState
 
 pytestmark = pytest.mark.asyncio
@@ -43,6 +46,7 @@ class TestOrchestrator:
 
         # Mock build_kernel() inside orchestrator
         orch.kernel = MagicMock()
+        orch.kernel.get_function = MagicMock(return_value=object())
         orch.kernel.invoke = AsyncMock()
 
         # Authentication service is mocked completely
@@ -149,3 +153,76 @@ class TestOrchestrator:
         # Ensure meter reading and product info plugins were invoked
         self.orch.handler.handle_product_info.assert_awaited_once()
         self.orch.handler.handle_meter_reading.assert_awaited_once()
+
+
+def _live_azure_enabled() -> bool:
+    required = (
+        "AZURE_OPENAI_ENDPOINT",
+        "AZURE_OPENAI_API_KEY",
+        "AZURE_OPENAI_DEPLOYMENT",
+    )
+    return os.getenv("RUN_LIVE_AZURE_TESTS") == "1" and all(
+        os.getenv(key) for key in required
+    )
+
+
+@pytest.mark.skipif(
+    not _live_azure_enabled(),
+    reason="Set RUN_LIVE_AZURE_TESTS=1 and Azure env vars in local .env to run live tests.",
+)
+class TestLivePluginsWithAzure:
+    async def test__intent_and_extraction_plugins_with_real_api(self) -> None:
+        kernel = build_kernel()
+
+        detect_fn = kernel.get_function(
+            plugin_name="IntentDetectionPlugin",
+            function_name="detect_intents",
+        )
+        extract_fn = kernel.get_function(
+            plugin_name="DataExtractionPlugin",
+            function_name="extract_data",
+        )
+
+        intent_result = await kernel.invoke(
+            detect_fn,
+            arguments=KernelArguments(email_text=EMAIL_PRODUCT_INFO),
+        )
+        extracted_result = await kernel.invoke(
+            extract_fn,
+            arguments=KernelArguments(email_text=EMAIL_PRODUCT_INFO),
+        )
+
+        intents = (
+            intent_result.value if hasattr(intent_result, "value") else intent_result
+        )
+        extracted = (
+            extracted_result.value
+            if hasattr(extracted_result, "value")
+            else extracted_result
+        )
+
+        assert intents is not None
+        assert isinstance(intents, list)
+        assert "ProductInfoRequest" in intents
+        assert isinstance(extracted, dict)
+        assert "tariff_questions" in extracted
+
+    async def test__product_info_plugin_with_real_api(self) -> None:
+        kernel = build_kernel()
+        product_fn = kernel.get_function(
+            plugin_name="ProductInfoPlugin",
+            function_name="process_product_info_request",
+        )
+
+        result = await kernel.invoke(
+            product_fn,
+            arguments=KernelArguments(
+                tariff_questions="What green electricity tariff do you offer?"
+            ),
+        )
+
+        payload = result.value if hasattr(result, "value") else result
+        assert isinstance(payload, dict)
+        assert payload.get("intent") == "ProductInfoRequest"
+        assert payload.get("status") == "success"
+        assert payload.get("assistant_answer")

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "agentic-customer-contact"
-version = "1.0.0"
+version = "2.0.0"
 description = "An agentic ai system to help deal with customer tickets"
 authors = ["Ashish Pandey <ashishpandey.nitt@gmail.com>"]
 readme = "README.md"
@@ -10,11 +10,11 @@ packages = [
 
 [tool.poetry.dependencies]
 python = ">=3.11,<3.12"
-semantic-kernel = "~1.10.0"
-openai = "^1.99.0"
+semantic-kernel = "^1.39.4"
+openai = "<2.0.0"
 pytest-asyncio = "^1.3.0"
 python-dotenv = "^1.2.1"
-pydantic = "~2.9.2"
+pydantic = "^2.0.0"
 
 [tool.poetry.group.dev.dependencies]
 autodoc-pydantic = ">=1.8,<3"
@@ -58,7 +58,7 @@ ensure_newline_before_comments = true
 line_length = 88
 
 [tool.poe.tasks]
-test = {cmd = "pytest --cov=src/ausschreibungsanalyse --cov-config=pyproject.toml", help = "Run test suite"}
+test = {cmd = "pytest --cov=src/agentic_customer_contact --cov-config=pyproject.toml", help = "Run test suite"}
 lint = {cmd = "flake8 --max-cognitive-complexity=15 src", help = "Lint and complexity score for source code"}
 black = {cmd = "black src tests", help = "Format source code"}
 isort = {cmd = "isort src tests", help = "Sort imports"}

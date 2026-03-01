@@ -1,4 +1,5 @@
 """Implement the authentication service class."""
+
 import json
 import logging
 import os
@@ -15,6 +16,7 @@ log = logging.getLogger(__name__)
 
 class AuthenticationService:
     """Class to carry out authentication service, for intents requiring authentication."""
+
     def __init__(self, conversation_id: str, kernel: Kernel):
         """Initialise.
 
@@ -63,7 +65,9 @@ class AuthenticationService:
                 state.auth_validated = True
                 return state
 
-            log.warning("...Authentication FAILED or incomplete — requesting more info...")
+            log.warning(
+                "...Authentication FAILED or incomplete — requesting more info..."
+            )
             # Load next mock email reply
             try:
                 next_email = self.reader.load_email(email_index)
@@ -77,9 +81,12 @@ class AuthenticationService:
             # Add that email to the history
             state.add_history(role="customer", content=next_email)
 
-            extracted_raw = await self.kernel.invoke(
+            extract_fn = self.kernel.get_function(
                 plugin_name="DataExtractionPlugin",
                 function_name="extract_data",
+            )
+            extracted_raw = await self.kernel.invoke(
+                extract_fn,
                 arguments=KernelArguments(email_text=next_email),
             )
             extracted = extracted_raw.value
@@ -90,7 +97,7 @@ class AuthenticationService:
                 if v:
                     state.auth_data[k] = v
 
-            log.info("Current auth_data:", state.auth_data)
+            log.info("Current auth_data: %s", state.auth_data)
 
 
 def _load_mock_db():

@@ -1,5 +1,7 @@
 """Implement Email Reader class."""
+
 import logging
+
 from .. import EMAIL_FOLDER
 
 log = logging.getLogger(__name__)
@@ -7,6 +9,7 @@ log = logging.getLogger(__name__)
 
 class EmailReader:
     """Class to read customer emails."""
+
     def __init__(self, conversation_id: str):
         """Initialise.
 

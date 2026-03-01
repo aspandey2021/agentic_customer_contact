@@ -68,7 +68,7 @@ class Orchestrator:
         log.info("...Extracting data...")
         extracted_data = await self._extract_data(email_text=email_text)
         state.extracted_data = extracted_data
-        log.info("...Extracted data : ", json.dumps(extracted_data, indent=2))
+        log.info("...Extracted data: %s", json.dumps(extracted_data, indent=2))
 
         to_auth_intents = [
             intent for intent in state.intents if intent in self.intents_req_auth
@@ -135,9 +135,12 @@ class Orchestrator:
         :param intent_output: dict containing all outputs from the plugins.
         :return: A FunctionResult object containing the consolidated and LLM generated reply.
         """
-        aggregated_reply = await self.kernel.invoke(
+        aggregate_fn = self.kernel.get_function(
             plugin_name="AggregationPlugin",
             function_name="aggregate_results",
+        )
+        aggregated_reply = await self.kernel.invoke(
+            aggregate_fn,
             arguments=KernelArguments(structured_json=json.dumps(intent_output)),
         )
         return aggregated_reply
@@ -166,9 +169,12 @@ class Orchestrator:
         :param email_text: content of the customer email.
         :return: List of intents as members of dataclass Intent.
         """
-        intents_raw = await self.kernel.invoke(
+        detect_fn = self.kernel.get_function(
             plugin_name="IntentDetectionPlugin",
             function_name="detect_intents",
+        )
+        intents_raw = await self.kernel.invoke(
+            detect_fn,
             arguments=KernelArguments(email_text=email_text),
         )
         # SK returns an SKResult → extract text/value
@@ -183,9 +189,12 @@ class Orchestrator:
         :param email_text: string content of the customer email.
         :return: dict containing relevant extracted parameters.
         """
-        extracted_raw = await self.kernel.invoke(
+        extract_fn = self.kernel.get_function(
             plugin_name="DataExtractionPlugin",
             function_name="extract_data",
+        )
+        extracted_raw = await self.kernel.invoke(
+            extract_fn,
             arguments=KernelArguments(email_text=email_text),
         )
         extracted_data = (

@@ -1,5 +1,7 @@
 """Implement Email Writer class."""
+
 import logging
+
 from .. import EMAIL_FOLDER
 
 log = logging.getLogger(__name__)
@@ -7,6 +9,7 @@ log = logging.getLogger(__name__)
 
 class EmailWriter:
     """Class to write final email to customer to a file."""
+
     def __init__(self, conversation_id: str):
         """Initialise.
         :param conversation_id: str identifier for the current conversation thread.

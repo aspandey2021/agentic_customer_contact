@@ -22,12 +22,6 @@ class ProductInfoPlugin:
         """
         self.llm = llm_service
         self.prompt_path = prompt_path
-        self.product_info = {
-            "intent": "ProductInfoRequest",
-            "status": "",
-            "customer_question": "",
-            "assistant_answer": "",
-        }
 
     @kernel_function(
         name="process_product_info_request",
@@ -43,20 +37,22 @@ class ProductInfoPlugin:
             prompt_path=self.prompt_path,
             variables={"customer_question": tariff_questions},
         )
-        self.product_info["customer_question"] = tariff_questions
+        product_info = {
+            "intent": "ProductInfoRequest",
+            "status": "",
+            "customer_question": tariff_questions,
+            "assistant_answer": "",
+        }
 
         try:
             response = json.loads(raw_result)
-            self.product_info["status"] = "success"
-            self.product_info["assistant_answer"] = response
-            return self.product_info
+            product_info["status"] = "success"
+            product_info["assistant_answer"] = response
+            return product_info
 
         except json.JSONDecodeError:
-            log.warning(
-                f"Could not extract relevant Product Info regarding the questions. "
-                f"Try again with some other questions."
-            )
+            log.warning("Product info response was non-JSON. Returning plain text.")
 
-            self.product_info["status"] = "failed"
-            self.product_info["assistant_answer"] = "No info found."
-            return self.product_info
+            product_info["status"] = "success"
+            product_info["assistant_answer"] = raw_result
+            return product_info

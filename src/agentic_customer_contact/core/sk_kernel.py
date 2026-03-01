@@ -6,6 +6,7 @@ from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from .. import (
     AGGREGATION_PROMPT,
     AZURE_OPENAI_API_KEY,
+    AZURE_OPENAI_API_VERSION,
     AZURE_OPENAI_DEPLOYMENT,
     AZURE_OPENAI_ENDPOINT,
     DATA_EXTRACTION_PROMPT,
@@ -13,8 +14,10 @@ from .. import (
     PRODUCT_INFO_PROMPT,
 )
 from ..plugins.aggregation_plugin import AggregationPlugin
+
 # from ..plugins.contract_plugin import ContractIssuesPlugin
 from ..plugins.data_extraction_plugin import DataExtractionPlugin
+
 # from ..plugins.feedback_plugin import FeedbackPlugin
 from ..plugins.intent_detection_plugin import IntentDetectionPlugin
 from ..plugins.meter_reading_plugin import MeterReadingPlugin
@@ -30,9 +33,11 @@ def build_kernel() -> Kernel:
 
     kernel.add_service(
         AzureChatCompletion(
+            service_id="azure_openai_chat",
             deployment_name=AZURE_OPENAI_DEPLOYMENT,
             endpoint=AZURE_OPENAI_ENDPOINT,
             api_key=AZURE_OPENAI_API_KEY,
+            api_version=AZURE_OPENAI_API_VERSION,
         )
     )
 
@@ -40,15 +45,23 @@ def build_kernel() -> Kernel:
 
     # Register plugins
     kernel.add_plugin(
-        IntentDetectionPlugin(llm, INTENT_DETECTION_PROMPT), "IntentDetectionPlugin"
+        IntentDetectionPlugin(llm, INTENT_DETECTION_PROMPT),
+        plugin_name="IntentDetectionPlugin",
     )
     kernel.add_plugin(
-        DataExtractionPlugin(llm, DATA_EXTRACTION_PROMPT), "DataExtractionPlugin"
+        DataExtractionPlugin(llm, DATA_EXTRACTION_PROMPT),
+        plugin_name="DataExtractionPlugin",
     )
-    kernel.add_plugin(MeterReadingPlugin(), "MeterReadingPlugin")
-    kernel.add_plugin(ProductInfoPlugin(llm, PRODUCT_INFO_PROMPT), "ProductInfoPlugin")
+    kernel.add_plugin(MeterReadingPlugin(), plugin_name="MeterReadingPlugin")
+    kernel.add_plugin(
+        ProductInfoPlugin(llm, PRODUCT_INFO_PROMPT),
+        plugin_name="ProductInfoPlugin",
+    )
     # kernel.add_plugin(ContractIssuesPlugin(), "ContractIssuesPlugin")
     # kernel.add_plugin(FeedbackPlugin(), "FeedbackPlugin")
-    kernel.add_plugin(AggregationPlugin(llm, AGGREGATION_PROMPT), "AggregationPlugin")
+    kernel.add_plugin(
+        AggregationPlugin(llm, AGGREGATION_PROMPT),
+        plugin_name="AggregationPlugin",
+    )
 
     return kernel

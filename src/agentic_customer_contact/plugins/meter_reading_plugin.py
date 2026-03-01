@@ -43,7 +43,7 @@ class MeterReadingPlugin:
         :param conversation_id: str identifier for the current conversation thread.
         :return: dict containing values saved to the DB with status and timestamp.
         """
-        timestamp = datetime.now()
+        timestamp = datetime.now().isoformat()
         self.db[meter_number] = {
             "reading": meter_reading,
             "timestamp": timestamp,

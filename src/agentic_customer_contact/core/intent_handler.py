@@ -29,14 +29,17 @@ class HandlerOfIntents:
         :param extracted: extracted customer data from email, like meter reading, personal data etc.
         :return: meter reading intent and value of meter reading.
         """
-        result = await self.kernel.invoke(
+        meter_fn = self.kernel.get_function(
             plugin_name="MeterReadingPlugin",
             function_name="save_meter_reading",
-            other_arguments={
-                "meter_number": extracted.get("meter_number"),
-                "meter_reading": extracted.get("meter_reading"),
-                "conversation_id": self.conversation_id,
-            },
+        )
+        result = await self.kernel.invoke(
+            meter_fn,
+            arguments=KernelArguments(
+                meter_number=extracted.get("meter_number"),
+                meter_reading=extracted.get("meter_reading"),
+                conversation_id=self.conversation_id,
+            ),
         )
         return intent, result.value
 
@@ -49,9 +52,12 @@ class HandlerOfIntents:
         :param extracted: extracted customer data from email, like meter reading, personal data etc.
         :return: product info intent and relevant product info generated from LLM service.
         """
-        result = await self.kernel.invoke(
+        product_info_fn = self.kernel.get_function(
             plugin_name="ProductInfoPlugin",
             function_name="process_product_info_request",
+        )
+        result = await self.kernel.invoke(
+            product_info_fn,
             arguments=KernelArguments(
                 tariff_questions=extracted.get("tariff_questions")
             ),
